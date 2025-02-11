@@ -40,3 +40,4 @@ app-example
 # Ignore private keys
 /private/*.json
 
+backend/private/*.json
