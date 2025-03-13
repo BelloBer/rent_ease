@@ -1,15 +1,12 @@
 // backend/src/server.ts
+import dotenv from 'dotenv';
+dotenv.config();
 
 import express from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db';
 import admin from './config/firebase';
 import authRoutes from './routes/authRoutes';
-
-
-// Initialize Environment Variables
-dotenv.config();
 
 // Connect Database
 connectDB();
@@ -56,7 +53,7 @@ app.use((err: any, req: any, res: any, next: any) => {
   res.status(500).json({ success: false, message: 'Server Error', error: err.message });
 });
 
-// Start Server
+// Start Server on PORT
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

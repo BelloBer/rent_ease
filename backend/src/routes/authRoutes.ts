@@ -1,20 +1,26 @@
-// backend/src/routes/authRoutes.ts
-
-import express from 'express';
-import admin from '../config/firebase';
+//backend/src/routes/authRoutes.ts
+import express, { Response } from 'express';
 import User from '../models/User';
-import { authenticateUser, authorizeAdmin } from '../middleware/authMiddleware';
+import { authenticateUser, authorizeAdmin, AuthenticatedRequest } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
+// Define a type for Register Request Body
+interface RegisterRequestBody {
+  uid: string;
+  email: string;
+  role: string;
+}
+
 // Register User
-router.post('/register', async (req, res) => {
+router.post('/register', async (req: AuthenticatedRequest<{}, {}, RegisterRequestBody>, res: Response) => {
   const { uid, email, role } = req.body;
 
   try {
     const existingUser = await User.findOne({ uid });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      res.status(400).json({ message: 'User already exists' });
+      return;
     }
 
     const newUser = new User({ uid, email, role });
@@ -25,13 +31,17 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Login (Verify Firebase Token)
-router.post('/login', authenticateUser, (req, res) => {
+// Login Route
+router.post('/login', authenticateUser, (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ message: 'Unauthorized' });
+    return;
+  }
   res.status(200).json({ message: 'Login successful', user: req.user });
 });
 
-// Admin Only Route
-router.get('/admin', authenticateUser, authorizeAdmin, (req, res) => {
+// Admin Route
+router.get('/admin', authenticateUser, authorizeAdmin, (req: AuthenticatedRequest, res: Response) => {
   res.status(200).json({ message: 'Welcome, Admin!' });
 });
 
